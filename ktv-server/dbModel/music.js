@@ -29,6 +29,14 @@ const musicModel = mongoose.Schema({
     date: {
         type: String,
         required: true
+    },
+    AudioMD5: {
+        type: String,
+        required: true
+    },
+    like: {
+        type: String,
+        default: 0,
     }
 })
 

@@ -18,9 +18,7 @@
             <Button type="primary" style="margin-left:0px;" @click="toListen = true">试听歌曲</Button>
         </Col>
         <!-- 试听歌曲按钮，点击这个按钮，显示所有歌曲的模态框 -->
-            <!-- <Col span="4">
-                <Button type="success" style="margin-left:0px;">所有歌曲</Button>
-                </Col> -->
+
             <!-- 歌曲控制是否播放以及添加按钮 -->
             <Col span="12" style="text-align:right;">
                 <!-- 控制歌曲的播放以及歌曲播放时候的动画 -->
@@ -103,35 +101,26 @@
                 </el-form-item>
                 <el-form-item label="歌曲地址" prop="src">
                     <Upload action="http://localhost:3000/api/admin/upload/music" :on-success="handleAddSongSuccess"
-                        :format="['mp3']">
-                        <Button icon="ios-cloud-upload-outline">上传歌曲</Button>
+                            :format="['mp3','ogg']">
+                      <Button icon="ios-cloud-upload-outline">上传歌曲</Button>
                     </Upload>
                 </el-form-item>
                 <el-form-item label="歌曲封面" prop="poster">
                 <Upload action="http://localhost:3000/api/admin/upload/poster" :on-success="handleAddPosterSuccess"
                     :format="['jpg', 'png']" :max-size="10000" multiple :show-upload-list="false">
-                    <!-- <Avatar 
-                               :src="'http://localhost:3000/api/admin/poster?img=' + addForm.poster" 
-                               size="large"
-                            /> -->
+
                         <Avatar :src="addFormPosterSrc" size="large" />
                     </Upload>
                 </el-form-item>
             <el-form-item label="语种" prop="language">
 
-                <!-- <el-select placeholder="请选择语种" v-model="addForm.language" clearable>
-                                            <el-option label="中文" value="chinese"></el-option>
-                                            <el-option label="日文" value="japan"></el-option>
-                                        </el-select> -->
+
                     <Select placeholder="请选择语种" v-model="addForm.language" clearable>
                         <Option v-for="item in languages" :value="item" :key="item">{{ item }}</Option>
                     </Select>
             </el-form-item>
             <el-form-item label="风格" prop="style">
-                <!-- <el-select placeholder="请选择歌曲风格" v-model="addForm.style">
-                                            <el-option label="流行风" value="liuxing"></el-option>
-                                            <el-option label="网络" value="wangluo"></el-option>
-                                        </el-select> -->
+
                     <Select placeholder="请选择歌曲风格" v-model="addForm.style" clearable>
                         <Option v-for="item in songStyles" :value="item" :key="item">{{ item }}</Option>
                     </Select>
@@ -233,6 +222,7 @@
 
 <script>
 import musicImg from '../assets/image/music.jpg'
+
 export default {
     name: 'managemusic',
     data() {
@@ -253,12 +243,13 @@ export default {
                 show: false
             },
             addForm: {
-                songName: '',//歌曲名称
-                artist: '',// 歌手名称
-                src: '',// 歌曲地址
-                poster: '',// 歌曲封面地址
-                language: '',// 歌曲语种
-                style: '',// 歌曲分类
+              songName: '',//歌曲名称
+              artist: '',// 歌手名称
+              src: '',// 歌曲地址
+              poster: '',// 歌曲封面地址
+              language: '',// 歌曲语种
+              style: '',// 歌曲分类
+              md5: '',//歌曲md5
             },
             addFormPosterSrc: musicImg,
             editFormPosterSrc: musicImg,
@@ -275,13 +266,14 @@ export default {
                 show: false
             },
             editForm: {
-                _id: "",
-                songName: '',//歌曲名称
-                artist: '',// 歌手名称
-                src: '',// 歌曲地址
-                poster: '',// 歌曲封面地址
-                language: '',// 歌曲语种
-                style: '',// 歌曲分类
+              _id: "",
+              songName: '',//歌曲名称
+              artist: '',// 歌手名称
+              src: '',// 歌曲地址
+              poster: '',// 歌曲封面地址
+              language: '',// 歌曲语种
+              style: '',// 歌曲分类
+              md5: '',//歌曲md5
             },
 
             // 语种
@@ -331,23 +323,23 @@ export default {
             // 获取输入的密码
             const inputPassword = this.inputPassword.trim()
             if (inputPassword.length > 0) {
-                // 把密码验证框给关闭
-                this.isCheckPassword = false
+              // 把密码验证框给关闭
+              this.isCheckPassword = false
 
-                // 把这个密码发到服务端去校验
-                this.$axios.post('http://localhost:3000/api/admin/islegal', {
-                    password: inputPassword,
-                    email: this.$store.getters.adminInfo.email
-                }).then(res => {
-                    // 把表单中的数据给发送到服务端
-                    // 提交添加音乐对话框表单中的数据
-                    console.log('islegal res=>', res)
-                    if (res.data == true) {
-                        if (this.flag == 1) {// 添加
-                            this.$axios.post('http://localhost:3000/api/admin/music/add', this.addForm)
-                                .then(res => {
-                                    console.log('add song res=>', res) // res.data=> {status:200,result:'添加成功'}
-                                    this.$Message.success(res.data.result)
+              // 把这个密码发到服务端去校验
+              this.$axios.post('/api/admin/islegal', {
+                password: inputPassword,
+                email: this.$store.getters.adminInfo.email
+              }).then(res => {
+                // 把表单中的数据给发送到服务端
+                // 提交添加音乐对话框表单中的数据
+                console.log('islegal res=>', res)
+                if (res.data == true) {
+                  if (this.flag == 1) {// 添加
+                    this.$axios.post('/api/admin/music/add', this.addForm)
+                        .then(res => {
+                          console.log('add song res=>', res) // res.data=> {status:200,result:'添加成功'}
+                          this.$Message.success(res.data.result)
 
                                     // 清空表单中的已填写的内容(重置)
                                     // 1、第一种方式
@@ -370,7 +362,7 @@ export default {
                                     this.$Message.error(err.data.result)
                                 })
                         } else if (this.flag == 2) {//编辑
-                            this.$axios.post('http://localhost:3000/api/admin/music/edit', this.editForm)
+                    this.$axios.post('/api/admin/music/edit', this.editForm)
                                 .then(res => {
                                     console.log('编辑歌曲res=>', res)
                                     this.getAllSong()
@@ -378,17 +370,27 @@ export default {
                                     this.$Message.success('更新成功')
                                 })
                         } else if (this.flag == 3) { // 删除
-                            this.$axios.post('http://localhost:3000/api/admin/music/delete', { _id: this.delRow._id })
-                                .then(res => {
-                                    console.log('删除歌曲返回res=>', res.data)
-                                    // 刷新列表
-                                    this.getAllSong()
+                    this.$axios.post('/api/admin/music/delete', {_id: this.delRow._id})
+                        .then(res => {
+                          console.log('删除歌曲返回res=>', res.data)
+                          // 刷新列表
+                          this.getAllSong()
 
-                                    // 清空数据
-                                    this.inputPassword = ""
-                                    this.$Message.success('删除成功')
-                                })
-                        }
+                          // 清空数据
+                          this.inputPassword = ""
+                          this.$Message.success('删除成功')
+                        })
+                  } else if (this.flag == 4) { // 收藏
+                    this.$axios.post('/api/admin/like/add', {_id: this.delRow._id})
+                        .then(res => {
+                          console.log('删除歌曲返回res=>', res.data)
+                          // 刷新列表
+
+                          // 清空数据
+                          this.inputPassword = ""
+                          this.$Message.success('收藏成功')
+                        })
+                  }
                     }
 
                 }).catch(err => {
@@ -447,13 +449,15 @@ export default {
 
         // 上传歌曲成功之后的回调函数
         handleAddSongSuccess(res) {
-            console.log('添加歌曲回调res=>', res)
-            this.addForm.src = res.result.src
+          console.log('添加歌曲回调res=>', res)
+          this.addForm.src = res.result.src
+          this.addForm.AudioMD5 = res.result.AudioMD5
         },
 
         // 编辑的时候上传歌曲成功之后的回调函数
         handleEditSongSuccess(res) {
-            this.editForm.src = res.result.src
+          this.editForm.src = res.result.src
+          this.editForm.AudioMD5 = res.result.AudioMD5
         },
 
         // 上传海报封面成功之后的回调函数
@@ -471,25 +475,25 @@ export default {
 
         // 根据歌曲或者歌手名称搜索
         searchSong() {
-            this.$axios.post('http://localhost:3000/api/admin/searchByName', {
-                searchName: this.searchName
-            }).then(res => {
-                this.allTableSongs = res.data.result // 所有的歌曲 12条数
+          this.$axios.post('/api/admin/searchByName', {
+            searchName: this.searchName
+          }).then(res => {
+            this.allTableSongs = res.data.result // 所有的歌曲 12条数
 
-                // 分页
-                this.paginations.total = this.allTableSongs.length
-                this.paginations.pageIndex = 1
-                this.paginations.pageSize = 5
+            // 分页
+            this.paginations.total = this.allTableSongs.length
+            this.paginations.pageIndex = 1
+            this.paginations.pageSize = 5
 
-                this.allSongs = this.allTableSongs.filter((item, index) => { // 过滤之后，只剩下5条数据了。
-                    return index < this.paginations.pageSize
-                })
+            this.allSongs = this.allTableSongs.filter((item, index) => { // 过滤之后，只剩下5条数据了。
+              return index < this.paginations.pageSize
+            })
             })
         },
 
         // 获取所有的歌曲
         getAllSong() {
-            this.$axios.get('http://localhost:3000/api/admin/allmusics')
+          this.$axios.get('/api/admin/allmusics')
                 .then(res => {
                     console.log('getAllSong res=>', res)
                     this.allTableSongs = res.data.result // 所有的歌曲 12条数
@@ -536,7 +540,10 @@ export default {
 
         // 收藏歌曲
         likeSongs(song) {
-            console.log('收藏歌曲song=>', song)
+          console.log("收藏")
+          this.isCheckPassword = true
+          this.flag = 4;
+          this.delRow = song
         },
 
         // 编辑歌曲

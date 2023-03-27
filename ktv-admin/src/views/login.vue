@@ -1,11 +1,11 @@
 <template>
     <div class="login">
-      <div class="form-box box">
+      <div v-loading="loading" class="form-box box">
         <div class="form-img">
           <img alt="" src="../assets/image/wallhaven-gjxp3q.png">
         </div>
         <el-form ref="loginForm" :inline-message="inline" :model="loginForm" :rules="loginRule" class="login-form"
-                 label-position="top" size="medium" status-icon>
+                 :disabled="form_disable" label-position="top" size="medium" status-icon>
           <div class="title">
             KTV管理系统
           </div>
@@ -23,7 +23,7 @@
             </div>
           </el-form-item>
           <el-form-item class="login-btn">
-            <el-button medium="medium" round style="width: 100%" type="danger" @click="submitForm('loginForm')">登录
+            <el-button medium="medium" round style="width: 100%" type="danger" @click="submitForm('loginForm');">登录
             </el-button>
           </el-form-item>
         </el-form>
@@ -35,7 +35,6 @@
 
 <script>
 import jwt_decode from 'jwt-decode'
-import wsmLoading from '@/plugins/wsmLoading'
 
 export default {
     name: 'Login',
@@ -70,7 +69,9 @@ export default {
               {required: false, validator: validateCapcha, trigger: 'change'}
             ]
           },
-          captureSrc: ''
+          captureSrc: '',
+          loading: false,
+          form_disable: false,
         };
     },
     mounted() {
@@ -79,51 +80,79 @@ export default {
     methods: {
         // 登录
         submitForm(formName) {
-            this.$refs[formName].validate((valid) => {
-                if (valid) {
-                    wsmLoading.start('正在登录，请稍候...')
+          let that;
+          that = this;
+          that.loading = true;
 
-                    setTimeout(() => {
-                        const captChaValue = this.getCaptchaFromCookie('captcha')
-                        console.log('captChaValue=>', captChaValue)
-                        if (captChaValue === this.loginForm.inputCaptcha) {// 验证码是否相等
+          this.$refs[formName].validate((valid) => {
+            if (valid) {
 
-                            // 调用接口，发送登录数据到后端
-                            // console.log('验证码相等')
-                            this.$axios.post('http://localhost:3000/api/admin/account/login', this.loginForm)
-                                .then(res => {
-                                    console.log('跳转到首页')
-                                    if (res) {
-                                        console.log('login res=>', res)
-                                        const { token } = res.data
-                                        // 解析token 保存token 到本地缓存 vuex
-                                        // token保存到本地缓存
-                                        localStorage.setItem('adminToken', token)
+              setTimeout(() => {
+                const captChaValue = this.getCaptchaFromCookie('captcha')
+                console.log('captChaValue=>', captChaValue)
+                if (captChaValue === this.loginForm.inputCaptcha) {// 验证码是否相等
+                  // wsmLoading.start('正在登录，请稍候...');
+                  // 调用接口，发送登录数据到后端
+                  // console.log('验证码相等')
+                  this.$axios.post('http://localhost:3000/api/admin/account/login', this.loginForm)
+                      .then(res => {
+                        console.log('跳转到首页')
+                        if (res) {
+                          console.log('login res=>', res)
+                          const {token} = res.data
+                          // 解析token 保存token 到本地缓存 vuex
+                          // token保存到本地缓存
+                          localStorage.setItem('adminToken', token)
 
-                                        // 解析token，获取信息
-                                        const decoded = jwt_decode(token)
-                                        // 存储到vuex中
-                                        this.$store.dispatch('setAdminInfo', decoded)
-                                        // 关闭loading
-                                        wsmLoading.end()
-                                        // 登录成功的提示框
-                                        this.$Message.success({
-                                            content: decoded.username + '登录成功',
-                                            onClose: () => {
-                                                // 使用js进行路由跳转
-                                                this.$router.push('/')
-                                            }
-                                        })
-                                    }
+                          // 解析token，获取信息
+                          const decoded = jwt_decode(token)
+                          // 存储到vuex中
+                          this.$store.dispatch('setAdminInfo', decoded)
+                          // 关闭loading
+                          // wsmLoading.end()
+                          // 登录成功的提示框
+                          that.loading = false;
+                          // this.$Message.success({
+                          //     content: decoded.username + '登录成功',
+                          //     onClose: () => {
+                          //         // 使用js进行路由跳转
+                          //         this.$router.push('/')
+                          //     }
+                          // })
+                          that.form_disable = true;
+                          this.$notify({
+                            title: '登录成功',
+                            message: '正在跳转,请稍后',
+                            type: 'success',
+                            onClose: () => {
+                              // 使用js进行路由跳转
+                              this.$router.push('/')
+                            }
+                          })
+                        }
                                 })
                                 .catch(error => {
-                                    // 关闭loading
-                                    wsmLoading.end()
-                                    console.error(error)
+                                  // 关闭loading
+                                  // wsmLoading.end()
+                                  that.loading = false;
+                                  console.error(error)
+                                  this.$notify({
+                                    title: "错误",
+                                    message: error.data.result,
+                                    type: 'error',
+                                    showClose: true,
+                                  })
                                 })
                         } else {
-                            wsmLoading.end()
-                        }
+                  // wsmLoading.end();
+                  that.loading = false;
+                  this.$notify({
+                    title: "错误",
+                    message: "验证码有误",
+                    type: "error",
+                    showClose: true,
+                  });
+                }
                     }, 1000)
                 } else {
                     console.log('error submit!!');
@@ -223,7 +252,7 @@ export default {
         font-style: normal;
         font-size: 1.9em;
         line-height: 24px;
-        margin-top: 30px;
+        margin-top: 10px;
         margin-bottom: 30px;
         /* identical to box height, or 60% */
       }
@@ -286,8 +315,8 @@ export default {
   }
 
   .box:hover {
-    -webkit-transform: scale(1.03, 1.03);
-    transform: scale(1.03, 1.03);
+    -webkit-transform: scale(1.05, 1.05);
+    transform: scale(1.05, 1.05);
   }
 
   .box:hover::after {

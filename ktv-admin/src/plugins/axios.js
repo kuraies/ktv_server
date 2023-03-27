@@ -6,7 +6,7 @@ import axios from 'axios'
 
 let config = {
     // todo 配置baseUrl
-    
+    baseURL: "http://localhost:3000",
     // 超时时间
     timeout: 60 * 1000
 }
