@@ -429,7 +429,9 @@ export default {
                     this.flag = 1
 
                 } else {
-                    // todo 例如：弹出提示框  Message
+                  // to_do 例如：弹出提示框  Message
+                  this.$message.error('表单有误');
+
                 }
             })
         },
@@ -442,7 +444,8 @@ export default {
                     this.editDialog.show = false
                     this.flag = 2
                 } else {
-                    // todo 例如：弹出提示框  Message
+                  // to_do 例如：弹出提示框  Message
+                  this.$message.error('表单有误');
                 }
             })
         },
